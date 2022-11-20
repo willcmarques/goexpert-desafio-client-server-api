@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -90,7 +91,8 @@ func handlerError(w http.ResponseWriter, message string) {
 }
 
 func getDollarExchange() (string, error) {
-	res, err := http.Get(dolar_price_url)
+	c := http.Client{Timeout: time.Millisecond * 200}
+	res, err := c.Get(dolar_price_url)
 	if err != nil {
 		return "", fmt.Errorf(fmt.Sprintf("Error when calling API: %v", err))
 	}
@@ -105,7 +107,9 @@ func getDollarExchange() (string, error) {
 func saveDollarPrice(dollarPrice float64) error {
 	db := getDBConnection()
 	defer db.Close()
-	_, err := db.Exec("INSERT INTO exchange_rate(id, dollar_price, created_at) VALUES(?,?,?)", uuid.New().String(), dollarPrice, time.Now())
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
+	_, err := db.ExecContext(ctx, "INSERT INTO exchange_rate(id, dollar_price, created_at) VALUES(?,?,?)", uuid.New().String(), dollarPrice, time.Now())
 	if err != nil {
 		return err
 	}
