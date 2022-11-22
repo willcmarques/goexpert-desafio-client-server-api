@@ -15,7 +15,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const dolar_price_url = "https://economia.awesomeapi.com.br/json/last/USD-BRL"
+const DOLAR_PRICE_URL = "https://economia.awesomeapi.com.br/json/last/USD-BRL"
 
 type USDBRL struct {
 	Bid          string `json:"bid"`
@@ -79,7 +79,7 @@ func cotacaoHandler(w http.ResponseWriter, r *http.Request) {
 		handlerError(w, fmt.Sprintf("Error when try to save in database: %v", err))
 		return
 	}
-
+	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&DollarExchangeResponse{DollarPrice: dollarPrice})
 
 }
@@ -92,14 +92,14 @@ func handlerError(w http.ResponseWriter, message string) {
 
 func getDollarExchange() (string, error) {
 	c := http.Client{Timeout: time.Millisecond * 200}
-	res, err := c.Get(dolar_price_url)
+	res, err := c.Get(DOLAR_PRICE_URL)
 	if err != nil {
-		return "", fmt.Errorf(fmt.Sprintf("Error when calling API: %v", err))
+		return "", fmt.Errorf("error when calling API: %v", err)
 	}
 	defer res.Body.Close()
 	content, err := io.ReadAll(res.Body)
 	if err != nil {
-		return "", fmt.Errorf(fmt.Sprintf("Response conversion error: %v", err))
+		return "", fmt.Errorf("response conversion error: %v", err)
 	}
 	return string(content), nil
 }
@@ -111,7 +111,7 @@ func saveDollarPrice(dollarPrice float64) error {
 	defer cancel()
 	_, err := db.ExecContext(ctx, "INSERT INTO exchange_rate(id, dollar_price, created_at) VALUES(?,?,?)", uuid.New().String(), dollarPrice, time.Now())
 	if err != nil {
-		return err
+		return fmt.Errorf("error when try to insert into the database: %v", err)
 	}
 	return nil
 }
