@@ -47,7 +47,7 @@ func setupDatabase() {
 }
 
 func getDBConnection() *sql.DB {
-	db, err := sql.Open("sqlite3", "./database/dollar.db")
+	db, err := sql.Open("sqlite3", "server/database/dollar.db")
 	if err != nil {
 		log.Fatalf("Error when connecting to the database: %v", err)
 	}
@@ -81,7 +81,6 @@ func cotacaoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&DollarExchangeResponse{DollarPrice: dollarPrice})
-
 }
 
 func handlerError(w http.ResponseWriter, message string) {

@@ -29,7 +29,7 @@ func main() {
 }
 
 func save(dollarPrice float64) error {
-	file, err := os.OpenFile("cotacao.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("client/cotacao.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("error when creating file: %v", err)
 	}
